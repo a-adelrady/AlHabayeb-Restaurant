@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/orders
+Disallow: /admin/products
+Disallow: /admin/settings
+Disallow: /admin/customers
+Disallow: /checkout
+Disallow: /order-success
+
+Sitemap: https://alhabayeb.com/sitemap.xml

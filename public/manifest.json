@@ -1,0 +1,17 @@
+{
+  "name": "مطعم الحبايب",
+  "short_name": "الحبايب",
+  "description": "أكل مصري بيتي حقيقي — اطلب مشاويك وكشريك أونلاين",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#C8960C",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["food", "lifestyle"],
+  "screenshots": []
+}
