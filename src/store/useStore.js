@@ -84,14 +84,34 @@ const useStore = create(
         const deliveryFee = get().getDeliveryFee();
         const total = subtotal + deliveryFee;
         const orderId = generateOrderId();
+        const zone = get().selectedZone;
         const newOrder = {
           id: orderId,
-          customer: customerData,
-          items: items.map((i) => ({ ...i })),
+          customer: {
+            name: customerData.name,
+            phone: customerData.phone,
+            address: customerData.address,
+            notes: customerData.notes || "",
+          },
+          zone: zone
+            ? {
+                id: zone.id,
+                name: zone.name,
+                fee: zone.fee,
+                estimatedTime: zone.estimatedTime || "",
+              }
+            : null,
+          items: items.map((i) => ({
+            productId: String(i.id),
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+            image: i.image || "",
+          })),
           subtotal,
           deliveryFee,
           total,
-          zone: get().selectedZone,
+          userUid: customerData.userUid || null,
           status: "pending",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

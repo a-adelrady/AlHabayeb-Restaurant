@@ -1,6 +1,7 @@
 import {
   fsSubscribeProducts,
   fsSubscribeOrders,
+  fsSubscribeArchivedOrders,
   fsSubscribeNotifications,
 } from "./services/firestoreService";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
@@ -102,8 +103,16 @@ function AppContent() {
       );
     })();
 
-    const unsubOrders = fsSubscribeOrders((orders) => {
-      useStore.setState({ orders });
+    const unsubOrders = fsSubscribeOrders((firestoreOrders) => {
+      useStore.setState((prev) => {
+        const firestoreIds = new Set(firestoreOrders.map(o => o.id))
+        const cleanArchived = prev.archivedOrders.filter(o => !firestoreIds.has(o.id))
+        return { orders: firestoreOrders, archivedOrders: cleanArchived }
+      })
+    });
+    
+    const unsubArchived = fsSubscribeArchivedOrders((archived) => {
+      useStore.setState({ archivedOrders: archived })
     });
 
     const unsubNotifications = fsSubscribeNotifications((notifications) => {
@@ -114,6 +123,7 @@ function AppContent() {
       unsubProducts();
       unsubCategories();
       unsubOrders();
+      unsubArchived();
       unsubNotifications();
     };
   }, []);

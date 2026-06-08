@@ -198,6 +198,22 @@ export function fsSubscribeOrders(callback) {
   });
 }
 
+export function fsSubscribeArchivedOrders(callback) {
+  if (DEMO_MODE) return () => {};
+  const q = query(
+    collection(db, COL.archivedOrders),
+    orderBy("createdAt", "desc"),
+    limit(100),
+  );
+  return onSnapshot(
+    q,
+    (snap) => {
+      callback(snap.docs.map((d) => ({ ...d.data(), id: d.id })));
+    },
+    () => {},
+  );
+}
+
 export async function fsGetArchivedOrders() {
   if (DEMO_MODE) return [];
   const snap = await getDocs(
