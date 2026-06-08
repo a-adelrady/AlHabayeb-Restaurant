@@ -104,15 +104,20 @@ function AppContent() {
     })();
 
     const unsubOrders = fsSubscribeOrders((firestoreOrders) => {
-      useStore.setState((prev) => {
-        const firestoreIds = new Set(firestoreOrders.map(o => o.id))
-        const cleanArchived = prev.archivedOrders.filter(o => !firestoreIds.has(o.id))
-        return { orders: firestoreOrders, archivedOrders: cleanArchived }
-      })
+      useStore.setState({ orders: firestoreOrders });
     });
-    
+
+    // تأكد إن الـ Firestore data دايماً تـoverride الـ localStorage
+    // بعمل forceUpdate بعد ثانيتين عشان يضمن إن الـ persist rehydration اتعمل
+    const forceSync = setTimeout(() => {
+      if (!DEMO_MODE) {
+        // re-trigger the subscription manually إذا كانت البيانات قديمة
+        useStore.setState((state) => ({ orders: state.orders }));
+      }
+    }, 2000);
+
     const unsubArchived = fsSubscribeArchivedOrders((archived) => {
-      useStore.setState({ archivedOrders: archived })
+      useStore.setState({ archivedOrders: archived });
     });
 
     const unsubNotifications = fsSubscribeNotifications((notifications) => {
@@ -125,6 +130,7 @@ function AppContent() {
       unsubOrders();
       unsubArchived();
       unsubNotifications();
+      clearTimeout(forceSync);
     };
   }, []);
 

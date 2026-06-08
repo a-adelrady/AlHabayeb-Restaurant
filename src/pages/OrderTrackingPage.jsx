@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -22,19 +22,20 @@ const STEPS = [
   { status: "on_the_way", label: "في الطريق إليك", icon: "🛵" },
   { status: "delivered", label: "تم التوصيل", icon: "✅" },
 ];
-const STEP_IDX = { pending: 0, preparing: 1, on_the_way: 2, delivered: 3 };
+const STEP_IDX = {
+  pending: 0,
+  preparing: 1,
+  on_the_way: 2,
+  delivered: 3,
+};
 
-// جيب الأوردر من Firestore — بيدور في orders وarchivedOrders
-async function fetchOrderFromFirestore(orderId) {
+// جيب الأوردر من Firestore مباشرة
+async function fetchFromFirestore(orderId) {
   try {
-    // دور الأول في orders العادية
-    const orderSnap = await getDoc(doc(db, "orders", orderId));
-    if (orderSnap.exists()) return { ...orderSnap.data(), id: orderSnap.id };
-
-    // لو مش موجود → دور في archivedOrders
-    const archSnap = await getDoc(doc(db, "archivedOrders", orderId));
-    if (archSnap.exists()) return { ...archSnap.data(), id: archSnap.id };
-
+    const snap = await getDoc(doc(db, "orders", orderId));
+    if (snap.exists()) return { ...snap.data(), id: snap.id };
+    const arch = await getDoc(doc(db, "archivedOrders", orderId));
+    if (arch.exists()) return { ...arch.data(), id: arch.id };
     return null;
   } catch {
     return null;
@@ -51,85 +52,94 @@ export default function OrderTrackingPage() {
   const [loading, setLoading] = useState(!!paramId);
   const [searched, setSearched] = useState(false);
 
-  // لما تفتح الصفحة بـ orderId في الـ URL
-  // دور في Zustand الأول (سريع) وبعدين Firestore (دقيق)
+  // ── تحميل الأوردر عند فتح الصفحة ──────────────────────────────────────
   useEffect(() => {
     if (!paramId) {
       setLoading(false);
       return;
     }
 
-    // دور في الـ store الأول عشان يظهر بسرعة
-    const local = getOrderById(paramId);
-    if (local) setOrder(local);
+    const load = async () => {
+      // 1. جرب Zustand أولاً (سريع)
+      const local = getOrderById(paramId);
+      if (local) setOrder(local);
 
-    if (DEMO_MODE) {
-      setLoading(false);
-      setSearched(true);
-      return;
-    }
+      if (DEMO_MODE) {
+        setLoading(false);
+        setSearched(true);
+        return;
+      }
 
-    // بعدين جيب النسخة الحديثة من Firestore
-    fetchOrderFromFirestore(paramId).then((fresh) => {
+      // 2. جيب من Firestore (دايماً الأحدث)
+      const fresh = await fetchFromFirestore(paramId);
       if (fresh) setOrder(fresh);
-      else if (!local) setOrder(null);
-      setSearched(true);
       setLoading(false);
-    });
+      setSearched(true);
+    };
+
+    load();
   }, [paramId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Real-time subscription — بيشتغل على orders وarchivedOrders
+  // ── Real-time subscription ──────────────────────────────────────────────
+  // بيشتغل على orders collection
+  // لو الـ orderId موجود حتى لو order = null في البداية
   useEffect(() => {
-    if (!order?.id || DEMO_MODE) return;
-    if (order.status === "delivered" || order.status === "cancelled") return;
+    const id = order?.id || paramId;
+    if (!id || DEMO_MODE) return;
 
-    // راقب الأوردر في orders collection
-    const unsubOrders = onSnapshot(
-      doc(db, "orders", order.id),
-      (snap) => {
+    // لو الأوردر delivered/cancelled مش محتاج subscription
+    if (order?.status === "delivered" || order?.status === "cancelled") return;
+
+    const unsub = onSnapshot(
+      doc(db, "orders", id),
+      async (snap) => {
         if (snap.exists()) {
-          setOrder((prev) => ({ ...prev, ...snap.data(), id: snap.id }));
+          // تحديث فوري من Firestore
+          setOrder(snap.data() ? { ...snap.data(), id: snap.id } : null);
         } else {
-          // الأوردر اتأرشف — دور في Firestore مباشرة
-          fetchOrderFromFirestore(order.id).then((archived) => {
-            if (archived) setOrder(archived);
-          });
+          // اختفى من orders → اتأرشف
+          const archived = await fetchFromFirestore(id);
+          if (archived) setOrder(archived);
         }
       },
-      () => {},
+      (err) => {
+        if (err.code !== "permission-denied") {
+          console.error("Tracking error:", err);
+        }
+      },
     );
 
-    return () => unsubOrders();
-  }, [order?.id, order?.status]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => unsub();
+  }, [order?.id, paramId, order?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // البحث اليدوي
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    const trimmed = input.trim().toUpperCase();
-    if (!trimmed) return;
+  // ── البحث اليدوي ────────────────────────────────────────────────────────
+  const handleSearch = useCallback(
+    async (e) => {
+      e.preventDefault();
+      const trimmed = input.trim().toUpperCase();
+      if (!trimmed) return;
 
-    setLoading(true);
-    setSearched(false);
-
-    // دور في Zustand الأول
-    const local = getOrderById(trimmed);
-    if (local) setOrder(local);
-
-    if (!DEMO_MODE) {
-      // دور في Firestore
-      const fresh = await fetchOrderFromFirestore(trimmed);
-      if (fresh) setOrder(fresh);
-      else if (!local) setOrder(null);
-    } else if (!local) {
+      setLoading(true);
       setOrder(null);
-    }
 
-    setSearched(true);
-    setLoading(false);
-    if (local || !DEMO_MODE) {
+      // Zustand أولاً
+      const local = getOrderById(trimmed);
+      if (local) setOrder(local);
+
+      if (!DEMO_MODE) {
+        const fresh = await fetchFromFirestore(trimmed);
+        if (fresh) setOrder(fresh);
+        else if (!local) setOrder(null);
+      } else if (!local) {
+        setOrder(null);
+      }
+
+      setSearched(true);
+      setLoading(false);
       navigate(`/track-order/${trimmed}`, { replace: true });
-    }
-  };
+    },
+    [input, getOrderById, navigate],
+  );
 
   const currentStep = order ? (STEP_IDX[order.status] ?? -1) : -1;
   const statusInfo = order ? getStatusLabel(order.status) : null;
@@ -155,17 +165,9 @@ export default function OrderTrackingPage() {
             </p>
           </div>
 
-          <form
-            onSubmit={handleSearch}
-            role="search"
-            className="flex gap-3 mb-8"
-          >
+          <form onSubmit={handleSearch} className="flex gap-3 mb-8">
             <div className="flex-1">
-              <label className="sr-only" htmlFor="order-search">
-                رقم الطلب
-              </label>
               <input
-                id="order-search"
                 type="text"
                 placeholder="أدخل رقم الطلب (مثال: HAB-xxx)"
                 value={input}
@@ -190,7 +192,6 @@ export default function OrderTrackingPage() {
             </motion.button>
           </form>
 
-          {/* Loading */}
           {loading && (
             <div className="text-center py-16">
               <div className="w-10 h-10 border-2 border-gold-500/30 border-t-gold-500 rounded-full animate-spin mx-auto mb-4" />
@@ -200,7 +201,6 @@ export default function OrderTrackingPage() {
             </div>
           )}
 
-          {/* Not found */}
           {!loading && searched && !order && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -217,7 +217,6 @@ export default function OrderTrackingPage() {
             </motion.div>
           )}
 
-          {/* Order details */}
           {!loading && order && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -235,14 +234,17 @@ export default function OrderTrackingPage() {
                       {order.id}
                     </p>
                   </div>
-                  <span
+                  <motion.span
+                    key={order.status}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
                     className={`px-3 py-1.5 rounded-full text-sm font-bold ${statusInfo?.color} ${statusInfo?.bg}`}
                   >
                     {statusInfo?.text}
-                  </span>
+                  </motion.span>
                 </div>
                 <div className="flex items-center gap-2 text-xs dark:text-zinc-500 text-gray-400">
-                  <MdAccessTime className="text-base" aria-hidden="true" />
+                  <MdAccessTime className="text-base" />
                   {formatDate(order.createdAt)}
                 </div>
               </div>
@@ -273,11 +275,13 @@ export default function OrderTrackingPage() {
                           key={step.status}
                           className="flex items-center gap-4 relative"
                         >
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-500 flex-shrink-0 text-lg
-                            ${done ? "bg-gold-500" : "dark:bg-zinc-800 bg-gray-100"}
-                            ${active ? "ring-4 ring-gold-500/30 scale-110" : ""}`}
-                            aria-current={active ? "step" : undefined}
+                          <motion.div
+                            key={`${step.status}-${done}`}
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: active ? 1.1 : 1 }}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center z-10 flex-shrink-0 text-lg
+                              ${done ? "bg-gold-500" : "dark:bg-zinc-800 bg-gray-100"}
+                              ${active ? "ring-4 ring-gold-500/30" : ""}`}
                           >
                             {done ? (
                               active ? (
@@ -288,10 +292,15 @@ export default function OrderTrackingPage() {
                             ) : (
                               <MdRadioButtonUnchecked className="text-zinc-500 text-lg" />
                             )}
-                          </div>
+                          </motion.div>
                           <div>
                             <p
-                              className={`font-semibold text-sm ${done ? "dark:text-white text-gray-900" : "dark:text-zinc-500 text-gray-400"}`}
+                              className={`font-semibold text-sm
+                              ${
+                                done
+                                  ? "dark:text-white text-gray-900"
+                                  : "dark:text-zinc-500 text-gray-400"
+                              }`}
                             >
                               {step.label}
                             </p>
@@ -308,9 +317,7 @@ export default function OrderTrackingPage() {
                 </div>
               ) : (
                 <div className="dark:bg-zinc-900 bg-white rounded-2xl p-6 border border-red-500/30 text-center">
-                  <div className="text-4xl mb-3" role="img" aria-label="ملغي">
-                    ❌
-                  </div>
+                  <div className="text-4xl mb-3">❌</div>
                   <p className="font-bold text-red-400 text-lg">
                     تم إلغاء الطلب
                   </p>
@@ -323,7 +330,7 @@ export default function OrderTrackingPage() {
                   تفاصيل الطلب
                 </h3>
                 <div className="space-y-2.5 mb-3">
-                  {order.items.map((item, i) => (
+                  {order.items?.map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
                       <span className="dark:text-zinc-300 text-gray-700">
                         {item.name} × {item.quantity}
