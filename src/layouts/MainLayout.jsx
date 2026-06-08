@@ -7,7 +7,7 @@ import FloatingButtons from '../components/common/FloatingButtons'
 import Footer from '../components/common/Footer'
 import { usePushNotifications } from '../hooks/usePushNotifications'
 import { useRoleAuth } from '../context/RoleAuthContext'
-import { InstallBanner } from '../components/common/InstallBanner'
+import InstallBanner from '../components/common/InstallBanner'
 
 const HIDE_FOOTER = ['/cart', '/checkout', '/order-success']
 
