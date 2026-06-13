@@ -1,11 +1,6 @@
 // Firebase v10 modular SDK
 import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
-} from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
@@ -30,11 +25,7 @@ if (!DEMO_MODE) {
     // FIX: enableIndexedDbPersistence() is deprecated
     // Use initializeFirestore() with persistentLocalCache
     // persistentMultipleTabManager handles the multi-tab caching
-    db = initializeFirestore(app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-      }),
-    });
+    db = getFirestore(app);
 
     auth = getAuth(app);
     storage = getStorage(app);
