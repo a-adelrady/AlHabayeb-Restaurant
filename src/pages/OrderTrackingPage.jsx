@@ -9,10 +9,6 @@ import {
   doc,
   getDoc,
   onSnapshot,
-  collection,
-  query,
-  where,
-  getDocs,
 } from "firebase/firestore";
 import { getStatusLabel, formatDate, formatPrice } from "../utils/helpers";
 
@@ -84,11 +80,8 @@ export default function OrderTrackingPage() {
   // بيشتغل على orders collection
   // لو الـ orderId موجود حتى لو order = null في البداية
   useEffect(() => {
-    const id = order?.id || paramId;
+    const id = paramId;
     if (!id || DEMO_MODE) return;
-
-    // لو الأوردر delivered/cancelled مش محتاج subscription
-    if (order?.status === "delivered" || order?.status === "cancelled") return;
 
     const unsub = onSnapshot(
       doc(db, "orders", id),
@@ -110,7 +103,7 @@ export default function OrderTrackingPage() {
     );
 
     return () => unsub();
-  }, [order?.id, paramId, order?.status]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [paramId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── البحث اليدوي ────────────────────────────────────────────────────────
   const handleSearch = useCallback(

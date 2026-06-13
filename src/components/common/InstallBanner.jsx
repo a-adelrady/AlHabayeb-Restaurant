@@ -38,7 +38,9 @@ export default function InstallBanner() {
     setShow(false);
     try {
       localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    } catch {}
+    } catch {
+      // Ignore localStorage errors
+    }
   };
 
   return (

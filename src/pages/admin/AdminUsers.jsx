@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdPerson, MdEdit, MdSave, MdClose, MdShield } from "react-icons/md";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { db, DEMO_MODE } from "../../services/firebase";
 import {
   useRoleAuth,
-  ROLES,
   ROLE_PERMISSIONS,
 } from "../../context/RoleAuthContext";
 
@@ -77,24 +76,26 @@ export default function AdminUsers() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      if (DEMO_MODE) {
-        setUsers(DEMO_ALL_USERS);
-        setLoading(false);
-        return;
-      }
-      try {
-        const snap = await getDocs(
-          query(collection(db, "users"), orderBy("createdAt", "desc")),
-        );
+    if (DEMO_MODE) {
+      setUsers(DEMO_ALL_USERS);
+      setLoading(false);
+      return;
+    }
+
+    // real-time subscription بدل one-time fetch
+    const unsub = onSnapshot(
+      query(collection(db, "users"), orderBy("createdAt", "desc")),
+      (snap) => {
         setUsers(snap.docs.map((d) => ({ uid: d.id, ...d.data() })));
-      } catch (e) {
+        setLoading(false);
+      },
+      () => {
         toast.error("فشل تحميل المستخدمين");
-      } finally {
         setLoading(false);
       }
-    };
-    load();
+    );
+
+    return () => unsub();
   }, []);
 
   const startEdit = (user) => {
