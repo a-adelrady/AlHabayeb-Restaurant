@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MdAdd,
@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 import useStore from "../../store/useStore";
 import { formatPrice } from "../../utils/helpers";
 import { uploadProductImage } from "../../services/storageService";
+import { usePagination } from "../../hooks/usePagination";
+import ShowMoreButton from "../../components/common/ShowMoreButton";
 
 const STOCK_STATUS = {
   high: { label: "متاح", color: "text-green-400", bg: "bg-green-400/10" },
@@ -79,6 +81,17 @@ export default function AdminProducts() {
       }),
     [products, filterCat, search],
   );
+
+  const {
+    paginated: paginatedProducts,
+    hasMore,
+    loadMore,
+    reset,
+  } = usePagination(filtered, 12);
+
+  useEffect(() => {
+    reset();
+  }, [filterCat, search]);
 
   const openAdd = () => {
     setForm(EMPTY);
@@ -247,7 +260,7 @@ export default function AdminProducts() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((p) => {
+          {paginatedProducts.map((p) => {
             const st = getStockStatus(p.stockQty ?? 99);
             const stCfg = STOCK_STATUS[st];
             return (
@@ -324,6 +337,12 @@ export default function AdminProducts() {
             );
           })}
         </div>
+        <ShowMoreButton
+          hasMore={hasMore}
+          onLoadMore={loadMore}
+          total={filtered.length}
+          shown={paginatedProducts.length}
+        />
       </div>
       {/* Modal — FIX: replaced inline style centering with flex */}
       <AnimatePresence>
@@ -343,7 +362,7 @@ export default function AdminProducts() {
               className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
             >
               <div
-                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl overflow-y-auto max-h-[92vh] pointer-events-auto"
+                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl overflow-y-auto max-h-[85vh] md:max-h-[92vh] pointer-events-auto"
                 role="dialog"
                 aria-modal="true"
                 onClick={(e) => e.stopPropagation()}

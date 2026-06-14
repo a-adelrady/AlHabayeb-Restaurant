@@ -10,12 +10,13 @@ import {
   MdLocationOn,
   MdArrowForward,
   MdAccessTime,
-  MdPerson,
 } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useRoleAuth } from "../context/RoleAuthContext";
 import useStore from "../store/useStore";
 import { formatPrice, formatDate, getStatusLabel } from "../utils/helpers";
+import { usePagination } from "../hooks/usePagination";
+import ShowMoreButton from "../components/common/ShowMoreButton";
 
 export default function UserProfilePage() {
   const navigate = useNavigate();
@@ -37,6 +38,12 @@ export default function UserProfilePage() {
       return false;
     })
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const {
+    paginated: paginatedOrders,
+    hasMore,
+    loadMore,
+  } = usePagination(myOrders, 5);
 
   const totalSpent = myOrders.reduce((s, o) => s + o.total, 0);
 
@@ -205,7 +212,7 @@ export default function UserProfilePage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {myOrders.map((order, i) => {
+                {paginatedOrders.map((order, i) => {
                   const st = getStatusLabel(order.status);
                   return (
                     <motion.article
@@ -269,6 +276,12 @@ export default function UserProfilePage() {
               </div>
             )}
           </motion.div>
+          <ShowMoreButton
+            hasMore={hasMore}
+            onLoadMore={loadMore}
+            total={myOrders.length}
+            shown={paginatedOrders.length}
+          />
 
           {/* Quick links */}
           <motion.div

@@ -4,10 +4,9 @@ import { MdPerson, MdEdit, MdSave, MdClose, MdShield } from "react-icons/md";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { db, DEMO_MODE } from "../../services/firebase";
-import {
-  useRoleAuth,
-  ROLE_PERMISSIONS,
-} from "../../context/RoleAuthContext";
+import { usePagination } from "../../hooks/usePagination";
+import ShowMoreButton from "../../components/common/ShowMoreButton";
+import { useRoleAuth, ROLE_PERMISSIONS } from "../../context/RoleAuthContext";
 
 const ROLE_CONFIG = {
   user: {
@@ -74,6 +73,11 @@ export default function AdminUsers() {
   const [editingId, setEditingId] = useState(null);
   const [newRole, setNewRole] = useState("");
   const [saving, setSaving] = useState(false);
+  const {
+    paginated: paginatedUsers,
+    hasMore,
+    loadMore,
+  } = usePagination(users, 20);
 
   useEffect(() => {
     if (DEMO_MODE) {
@@ -92,7 +96,7 @@ export default function AdminUsers() {
       () => {
         toast.error("فشل تحميل المستخدمين");
         setLoading(false);
-      }
+      },
     );
 
     return () => unsub();
@@ -163,7 +167,7 @@ export default function AdminUsers() {
 
       {/* Users list */}
       <div className="space-y-2">
-        {users.map((user) => {
+        {paginatedUsers.map((user) => {
           const cfg = ROLE_CONFIG[user.role] || ROLE_CONFIG.user;
           const isEditing = editingId === user.uid;
           const isSelf = user.uid === currentUser?.uid;
@@ -262,6 +266,12 @@ export default function AdminUsers() {
           );
         })}
       </div>
+      <ShowMoreButton
+        hasMore={hasMore}
+        onLoadMore={loadMore}
+        total={users.length}
+        shown={paginatedUsers.length}
+      />
     </div>
   );
 }
