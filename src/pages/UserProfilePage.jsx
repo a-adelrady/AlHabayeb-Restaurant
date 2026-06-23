@@ -155,7 +155,7 @@ export default function UserProfilePage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t dark:border-zinc-800 border-gray-100">
+            <div className="grid grid-cols-3 gap-2 mt-5 pt-5 border-t dark:border-zinc-800 border-gray-100">
               {[
                 {
                   label: "إجمالي الطلبات",

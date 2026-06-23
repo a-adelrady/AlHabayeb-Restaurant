@@ -6,9 +6,9 @@ export default function StatsSection() {
   const { ref, inView } = useInView({ threshold:0.1, triggerOnce:true })
   return (
     <section ref={ref} className="relative py-20 md:py-28 overflow-hidden">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 ">
         <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=70" alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/82" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
       </div>
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
