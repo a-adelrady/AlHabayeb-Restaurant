@@ -1,27 +1,35 @@
-import { Link, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { MdHome, MdRestaurantMenu, MdShoppingCart, MdLocationOn, MdPerson } from 'react-icons/md'
-import useStore from '../../store/useStore'
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  MdHome,
+  MdRestaurantMenu,
+  MdShoppingCart,
+  MdCode,
+  MdPerson,
+} from "react-icons/md";
+import useStore from "../../store/useStore";
 
 export default function BottomNav() {
-  const location = useLocation()
+  const location = useLocation();
 
   // FIX: granular selector — only re-render when cart count changes
-  const cartCount = useStore(s => s.cartItems.reduce((acc, i) => acc + i.quantity, 0))
+  const cartCount = useStore((s) =>
+    s.cartItems.reduce((acc, i) => acc + i.quantity, 0),
+  );
 
   // FIX: removed /admin link from customer-facing bottom nav.
   // Having an admin dashboard link in the user bottom nav is a UI/UX and
   // security anti-pattern — it surfaces admin routes to regular users.
   const tabs = [
-    { to: '/', icon: MdHome, label: 'الرئيسية' },
-    { to: '/menu', icon: MdRestaurantMenu, label: 'المنيو' },
-    { to: '/cart', icon: MdShoppingCart, label: 'السلة', badge: cartCount },
-    { to: '/track-order', icon: MdLocationOn, label: 'تتبع' },
-    { to: '/profile', icon: MdPerson, label: 'حسابي' },
-  ]
+    { to: "/", icon: MdHome, label: "الرئيسية" },
+    { to: "/menu", icon: MdRestaurantMenu, label: "المنيو" },
+    { to: "/cart", icon: MdShoppingCart, label: "السلة", badge: cartCount },
+    { to: "/developer", icon: MdCode, label: "المطور" },
+    { to: "/profile", icon: MdPerson, label: "حسابي" },
+  ];
 
   // Hide on admin pages
-  if (location.pathname.startsWith('/admin')) return null
+  if (location.pathname.startsWith("/admin")) return null;
 
   return (
     <nav
@@ -30,17 +38,22 @@ export default function BottomNav() {
     >
       <div className="flex items-center">
         {tabs.map(({ to, icon: Icon, label, badge }) => {
-          const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
+          const isActive =
+            to === "/"
+              ? location.pathname === "/"
+              : location.pathname.startsWith(to);
           return (
             <Link
               key={to}
               to={to}
               aria-label={label}
-              aria-current={isActive ? 'page' : undefined}
+              aria-current={isActive ? "page" : undefined}
               className="flex-1 flex flex-col items-center py-2 gap-0.5 relative"
             >
               <div className="relative">
-                <Icon className={`text-2xl transition-colors duration-200 ${isActive ? 'text-gold-500' : 'dark:text-zinc-400 text-gray-500'}`} />
+                <Icon
+                  className={`text-2xl transition-colors duration-200 ${isActive ? "text-gold-500" : "dark:text-zinc-400 text-gray-500"}`}
+                />
                 {badge > 0 && (
                   <motion.span
                     key={badge}
@@ -52,19 +65,21 @@ export default function BottomNav() {
                   </motion.span>
                 )}
               </div>
-              <span className={`text-[10px] font-medium transition-colors duration-200 ${isActive ? 'text-gold-500' : 'dark:text-zinc-500 text-gray-400'}`}>
+              <span
+                className={`text-[10px] font-medium transition-colors duration-200 ${isActive ? "text-gold-500" : "dark:text-zinc-500 text-gray-400"}`}
+              >
                 {label}
               </span>
               {isActive && (
                 <motion.div
                   layoutId="bottomNavIndicator"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gold-500 rounded-full"
+                  className="absolute top-0 -translate-x-1/2 w-8 h-[3px] bg-gold-500 rounded-full -translate-y-full"
                 />
               )}
             </Link>
-          )
+          );
         })}
       </div>
     </nav>
-  )
+  );
 }

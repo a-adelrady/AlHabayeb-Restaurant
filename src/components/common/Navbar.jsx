@@ -43,6 +43,7 @@ export default function Navbar() {
     { to: '/', label: 'الرئيسية' },
     { to: '/menu', label: 'المنيو' },
     { to: '/track-order', label: 'تتبع الطلب' },
+    { to: '/developer', label: '👨‍💻 المطور' },
   ]
 
   return (
