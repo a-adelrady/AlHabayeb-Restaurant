@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
-import { FaWhatsapp, FaGithub, FaLinkedin, FaCode, FaMobile, FaServer, FaPalette } from 'react-icons/fa'
+import { FaWhatsapp, FaGithub, FaLinkedin, FaCode, FaServer, FaPalette } from 'react-icons/fa'
 import { MdEmail, MdStar } from 'react-icons/md'
+// import { myPhoto } from "public/favicon.svg"
 
 const SERVICES = [
-  { icon: FaMobile,  title: 'تطبيقات الموبايل',   desc: 'React Native, Flutter — تطبيقات iOS وAndroid احترافية' },
   { icon: FaCode,    title: 'مواقع ويب',            desc: 'React, Next.js — مواقع سريعة وعصرية' },
   { icon: FaServer,  title: 'Backend & APIs',        desc: 'Node.js, Firebase, Supabase — خدمات خلفية قابلة للتوسع' },
   { icon: FaPalette, title: 'UI/UX Design',          desc: 'تصميم واجهات احترافية مع تجربة مستخدم مميزة' },
@@ -39,7 +39,7 @@ export default function DeveloperPage() {
             >
               {/* Avatar */}
               <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-gold-500 to-yellow-400 flex items-center justify-center text-black text-4xl font-bold mx-auto mb-6 shadow-xl shadow-gold-500/30">
-                AA
+                aa
               </div>
               <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}>
                 <span className="inline-block bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
@@ -59,10 +59,10 @@ export default function DeveloperPage() {
                 className="flex items-center justify-center gap-3 mt-8 flex-wrap"
               >
                 {[
-                  { href:'https://wa.me/201094799308', icon:FaWhatsapp, label:'واتساب',  color:'bg-green-500 hover:bg-green-600 text-white' },
-                  { href:'mailto:ahmed@dev.com',        icon:MdEmail,    label:'إيميل',   color:'bg-blue-500 hover:bg-blue-600 text-white' },
-                  { href:'https://github.com/',         icon:FaGithub,   label:'GitHub',  color:'dark:bg-zinc-800 bg-gray-200 dark:hover:bg-zinc-700 hover:bg-gray-300 dark:text-white text-gray-900' },
-                  { href:'https://linkedin.com/',       icon:FaLinkedin, label:'LinkedIn', color:'bg-blue-700 hover:bg-blue-800 text-white' },
+                  { href:'https://wa.me/2011100487170', icon:FaWhatsapp, label:'واتساب',  color:'bg-green-500 hover:bg-green-600 text-white' },
+                  { href:'ahmedadel.elareed@gmail.com',        icon:MdEmail,    label:'إيميل',   color:'bg-blue-500 hover:bg-blue-600 text-white' },
+                  { href:'https://github.com/a-adelrady',         icon:FaGithub,   label:'GitHub',  color:'dark:bg-zinc-800 bg-gray-200 dark:hover:bg-zinc-700 hover:bg-gray-300 dark:text-white text-gray-900' },
+                  { href:'https://www.linkedin.com/in/ahmed-adel-775515253',       icon:FaLinkedin, label:'LinkedIn', color:'bg-blue-700 hover:bg-blue-800 text-white' },
                 ].map(({ href, icon: Icon, label, color }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer"
                     className={`flex items-center gap-2 ${color} font-semibold px-5 py-2.5 rounded-xl transition-all text-sm`}>
@@ -124,7 +124,7 @@ export default function DeveloperPage() {
           <div className="max-w-xl mx-auto px-4 text-center">
             <h2 className="text-2xl font-bold dark:text-white text-gray-900 mb-3">جاهز تبني مشروعك؟</h2>
             <p className="dark:text-zinc-400 text-gray-500 text-sm mb-8">تواصل معي عبر واتساب أو إيميل وهنبدأ فوراً</p>
-            <a href="https://wa.me/201094799308?text=مرحباً، أريد بناء مشروع"
+            <a href="https://wa.me/2011100487170?text=مرحباً، أريد بناء مشروع"
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-lg shadow-green-500/30 text-base">
               <FaWhatsapp className="text-xl" /> تواصل على واتساب

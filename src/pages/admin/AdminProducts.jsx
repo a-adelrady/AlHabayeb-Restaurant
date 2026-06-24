@@ -48,7 +48,14 @@ const EMPTY = {
   prepTime: "",
   inStock: true,
   stockQty: 50,
+  sizes: [], // أحجام المنتج لو الكاتجوري بتاعته نوعها 'sizes'
 };
+
+const DEFAULT_SIZES = [
+  { id: "quarter", label: "ربع", price: "" },
+  { id: "half", label: "نص", price: "" },
+  { id: "full", label: "كامل", price: "" },
+];
 
 export default function AdminProducts() {
   // FIX: granular selectors
@@ -474,6 +481,84 @@ export default function AdminProducts() {
                         className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 outline-none focus:border-gold-500 text-sm"
                       />
                     </div>
+                    {/* أحجام — بتظهر بس لو الكاتجوري نوعها sizes */}
+                    {(() => {
+                      const cat = categories.find(
+                        (c) => c.id === form.category,
+                      );
+                      if (cat?.orderType !== "sizes") return null;
+                      const sizes = form.sizes?.length
+                        ? form.sizes
+                        : DEFAULT_SIZES;
+                      return (
+                        <div>
+                          <label className="text-zinc-400 text-xs mb-2 block">
+                            أحجام المنتج وأسعارها
+                          </label>
+                          <div className="space-y-2">
+                            {sizes.map((size, idx) => (
+                              <div
+                                key={size.id}
+                                className="flex items-center gap-2"
+                              >
+                                <input
+                                  value={size.label}
+                                  onChange={(e) => {
+                                    const updated = [...sizes];
+                                    updated[idx] = {
+                                      ...updated[idx],
+                                      label: e.target.value,
+                                    };
+                                    setForm((f) => ({ ...f, sizes: updated }));
+                                  }}
+                                  placeholder="اسم الحجم"
+                                  className="flex-1 px-3 py-2 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 outline-none focus:border-gold-500 text-sm"
+                                />
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={size.price}
+                                  onChange={(e) => {
+                                    const updated = [...sizes];
+                                    updated[idx] = {
+                                      ...updated[idx],
+                                      price: e.target.value,
+                                    };
+                                    setForm((f) => ({ ...f, sizes: updated }));
+                                  }}
+                                  placeholder="السعر"
+                                  className="w-24 px-3 py-2 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-600 outline-none focus:border-gold-500 text-sm"
+                                />
+                                <span className="text-zinc-500 text-xs">
+                                  ج.م
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((f) => ({
+                                ...f,
+                                sizes: [
+                                  ...(f.sizes?.length
+                                    ? f.sizes
+                                    : DEFAULT_SIZES),
+                                  {
+                                    id: `size_${Date.now()}`,
+                                    label: "",
+                                    price: "",
+                                  },
+                                ],
+                              }))
+                            }
+                            className="mt-2 text-xs text-gold-400 hover:text-gold-300"
+                          >
+                            + إضافة حجم
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div>

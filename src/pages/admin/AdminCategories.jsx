@@ -22,7 +22,13 @@ const EMOJIS = [
   "🍜",
   "🥞",
 ];
-const EMPTY = { name: "", icon: "🍽️" };
+const EMPTY = { name: "", icon: "🍽️", orderType: "simple" };
+
+const ORDER_TYPES = [
+  { value: "simple", label: "عادي", desc: "أضف للسلة مباشرة" },
+  { value: "quantity", label: "كمية فقط", desc: "العميل يختار الكمية" },
+  { value: "sizes", label: "أحجام + كمية", desc: "العميل يختار الحجم والكمية" },
+];
 
 export default function AdminCategories() {
   // FIX: granular selectors
@@ -44,7 +50,7 @@ export default function AdminCategories() {
     setShowModal(true);
   };
   const openEdit = (c) => {
-    setForm({ name: c.name, icon: c.icon });
+    setForm({ name: c.name, icon: c.icon, orderType: c.orderType || "simple" });
     setEditingId(c.id);
     setShowModal(true);
   };
@@ -150,6 +156,28 @@ export default function AdminCategories() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-white text-base">{cat.name}</h3>
                   <p className="text-zinc-500 text-xs mt-0.5">{count} منتج</p>
+                  {cat.orderType && cat.orderType !== "simple" && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full mt-1 inline-block ${
+                        cat.orderType === "sizes"
+                          ? "bg-purple-500/10 text-purple-400"
+                          : "bg-blue-500/10 text-blue-400"
+                      }`}
+                    >
+                      {cat.orderType === "sizes" ? "أحجام" : "كمية"}
+                    </span>
+                  )}
+                  {cat.orderType && cat.orderType !== "simple" && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full mt-1 inline-block ${
+                        cat.orderType === "sizes"
+                          ? "bg-purple-500/10 text-purple-400"
+                          : "bg-blue-500/10 text-blue-400"
+                      }`}
+                    >
+                      {cat.orderType === "sizes" ? "أحجام" : "كمية"}
+                    </span>
+                  )}
                 </div>
                 {cat.id !== "all" && (
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
@@ -243,6 +271,51 @@ export default function AdminCategories() {
                         >
                           {emoji}
                         </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* نوع الطلب */}
+                  <div>
+                    <label className="text-zinc-400 text-xs mb-2 block">
+                      نوع الطلب
+                    </label>
+                    <div className="space-y-2">
+                      {ORDER_TYPES.map((type) => (
+                        <label
+                          key={type.value}
+                          className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                            form.orderType === type.value
+                              ? "border-gold-500 bg-gold-500/10"
+                              : "border-zinc-700 hover:border-zinc-600"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="orderType"
+                            value={type.value}
+                            checked={form.orderType === type.value}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                orderType: e.target.value,
+                              }))
+                            }
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${
+                              form.orderType === type.value
+                                ? "border-gold-500 bg-gold-500"
+                                : "border-zinc-600"
+                            }`}
+                          />
+                          <div>
+                            <p className="text-white text-sm font-medium">
+                              {type.label}
+                            </p>
+                            <p className="text-zinc-500 text-xs">{type.desc}</p>
+                          </div>
+                        </label>
                       ))}
                     </div>
                   </div>

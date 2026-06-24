@@ -27,6 +27,7 @@ import HomePage from "./pages/HomePage";
 
 // Lazy-loaded pages
 const MenuPage = lazy(() => import("./pages/MenuPage"));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
 const CartPage = lazy(() => import("./pages/CartPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
@@ -143,6 +144,8 @@ function AppContent() {
             <Route path="/" element={<MainLayout />}>
               <Route index element={<HomePage />} />
               <Route path="menu" element={<MenuPage />} />
+              <Route path="menu" element={<MenuPage />} />
+<Route path="product/:productId" element={<ProductDetailPage />} />
               <Route path="cart" element={<CartPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="order-success" element={<OrderSuccessPage />} />
