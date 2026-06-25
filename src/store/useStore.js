@@ -267,6 +267,105 @@ const useStore = create(
       deleteDeliveryZone: (id) =>
         set({ deliveryZones: get().deliveryZones.filter((z) => z.id !== id) }),
 
+      // ── Offers (سكشن العروض في الرئيسية) ─────────────────────────────
+      offers: [
+        {
+          id: "offer_1",
+          title: "وجبة الاثنين بنص التمن",
+          description: "أي وجبة فردية بخصم 50% كل يوم اثنين من 2م حتى 5م",
+          discount: "50%",
+          color: "from-orange-600 to-red-600",
+          image:
+            "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500",
+          active: true,
+          expiresAt: null,
+        },
+        {
+          id: "offer_2",
+          title: "طبق العيلة الكبير",
+          description: "وجبة كاملة لـ4 أشخاص بسعر مميز",
+          discount: "25%",
+          color: "from-emerald-600 to-teal-600",
+          image:
+            "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500",
+          active: true,
+          expiresAt: null,
+        },
+        {
+          id: "offer_3",
+          title: "ساعة السعادة",
+          description: "خصم على المشروبات والحلويات من 3م لـ6م",
+          discount: "30%",
+          color: "from-purple-600 to-pink-600",
+          image:
+            "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=500",
+          active: true,
+          expiresAt: null,
+        },
+      ],
+      addOffer: (offer) => {
+        const newOffer = { ...offer, id: `offer_${Date.now()}` };
+        set({ offers: [...get().offers, newOffer] });
+      },
+      updateOffer: (id, updates) =>
+        set({
+          offers: get().offers.map((o) =>
+            o.id === id ? { ...o, ...updates } : o,
+          ),
+        }),
+      deleteOffer: (id) =>
+        set({ offers: get().offers.filter((o) => o.id !== id) }),
+
+      // ── Coupons ───────────────────────────────────────────────────────
+      coupons: [],
+      addCoupon: (coupon) => {
+        const newCoupon = {
+          ...coupon,
+          id: `coup_${Date.now()}`,
+          usedCount: 0,
+          createdAt: new Date().toISOString(),
+        };
+        set({ coupons: [...get().coupons, newCoupon] });
+        return newCoupon;
+      },
+      updateCoupon: (id, updates) =>
+        set({
+          coupons: get().coupons.map((c) =>
+            c.id === id ? { ...c, ...updates } : c,
+          ),
+        }),
+      deleteCoupon: (id) =>
+        set({ coupons: get().coupons.filter((c) => c.id !== id) }),
+      validateCoupon: (code, subtotal) => {
+        const coupon = get().coupons.find(
+          (c) => c.code.toUpperCase() === code.toUpperCase() && c.active,
+        );
+        if (!coupon) return { valid: false, error: "كوبون غير صحيح" };
+        if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date())
+          return { valid: false, error: "انتهت صلاحية الكوبون" };
+        if (coupon.maxUses && coupon.usedCount >= coupon.maxUses)
+          return { valid: false, error: "تم استخدام الكوبون الحد الأقصى" };
+        if (coupon.minOrder && subtotal < coupon.minOrder)
+          return {
+            valid: false,
+            error: `الحد الأدنى للطلب ${coupon.minOrder} ج.م`,
+          };
+        const discount =
+          coupon.type === "percent"
+            ? Math.round((subtotal * coupon.value) / 100)
+            : coupon.value;
+        return { valid: true, coupon, discount };
+      },
+      useCoupon: (code) => {
+        set({
+          coupons: get().coupons.map((c) =>
+            c.code.toUpperCase() === code.toUpperCase()
+              ? { ...c, usedCount: (c.usedCount || 0) + 1 }
+              : c,
+          ),
+        });
+      },
+
       // ── Settings ──────────────────────────────────────────────────────
       settings: {
         whatsappNumber: "201094799308",
@@ -304,6 +403,8 @@ const useStore = create(
         categories: state.categories,
         deliveryZones: state.deliveryZones,
         settings: state.settings,
+        offers:   state.offers,
+        coupons:  state.coupons,
       }),
     },
   ),

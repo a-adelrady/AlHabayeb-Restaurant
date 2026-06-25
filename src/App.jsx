@@ -27,13 +27,14 @@ import HomePage from "./pages/HomePage";
 
 // Lazy-loaded pages
 const MenuPage = lazy(() => import("./pages/MenuPage"));
-const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
 const OrderTrackingPage = lazy(() => import("./pages/OrderTrackingPage"));
 const DeveloperPage = lazy(() => import("./pages/DeveloperPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
+const AdminOffers = lazy(() => import("./pages/admin/AdminOffers"));
 const UserProfilePage = lazy(() => import("./pages/UserProfilePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
@@ -145,7 +146,10 @@ function AppContent() {
               <Route index element={<HomePage />} />
               <Route path="menu" element={<MenuPage />} />
               <Route path="menu" element={<MenuPage />} />
-<Route path="product/:productId" element={<ProductDetailPage />} />
+              <Route
+                path="product/:productId"
+                element={<ProductDetailPage />}
+              />
               <Route path="cart" element={<CartPage />} />
               <Route path="checkout" element={<CheckoutPage />} />
               <Route path="order-success" element={<OrderSuccessPage />} />
@@ -197,6 +201,14 @@ function AppContent() {
                 element={
                   <RequirePermission perm="manage_delivery">
                     <AdminDelivery />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="offers"
+                element={
+                  <RequirePermission perm="manage_settings">
+                    <AdminOffers />
                   </RequirePermission>
                 }
               />

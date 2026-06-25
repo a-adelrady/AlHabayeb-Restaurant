@@ -94,6 +94,12 @@ export default function ProductCard({ product }) {
             {product.badge}
           </span>
         )}
+        {/* badge الخصم — بيظهر لو المنتج عنده discountPercent */}
+        {product.discountPercent > 0 && (
+          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            -{product.discountPercent}%
+          </span>
+        )}
 
         {/* Out of stock overlay */}
         {isOutOfStock && (
@@ -147,9 +153,26 @@ export default function ProductCard({ product }) {
         )}
 
         <div className="flex items-center justify-between">
-          <span className="font-bold text-gold-500 text-lg">
-            {formatPrice(product.price)}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            {product.discountPercent > 0 ? (
+              <>
+                <span className="font-bold text-gold-500 text-lg">
+                  {formatPrice(
+                    Math.round(
+                      product.price * (1 - product.discountPercent / 100),
+                    ),
+                  )}
+                </span>
+                <span className="text-zinc-500 line-through text-xs">
+                  {formatPrice(product.price)}
+                </span>
+              </>
+            ) : (
+              <span className="font-bold text-gold-500 text-lg">
+                {formatPrice(product.price)}
+              </span>
+            )}
+          </div>
 
           {isOutOfStock ? (
             <span className="text-xs text-red-400 font-medium">غير متاح</span>

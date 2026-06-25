@@ -14,6 +14,7 @@ import {
   MdDeliveryDining,
   MdNotifications,
   MdManageAccounts,
+  MdLocalOffer,
 } from "react-icons/md";
 import { useRoleAuth, ROLES } from "../context/RoleAuthContext";
 import useStore from "../store/useStore";
@@ -59,6 +60,12 @@ const ALL_NAV_ITEMS = [
     perm: "manage_delivery",
   },
   {
+    path: "/admin/offers",
+    label: "العروض",
+    icon: MdLocalOffer,
+    perm: "manage_settings",
+  },
+  {
     path: "/admin/settings",
     label: "الإعدادات",
     icon: MdSettings,
@@ -73,33 +80,33 @@ const ALL_NAV_ITEMS = [
 ];
 
 function RoleBadge({ role }) {
-    const config = {
-      superadmin: {
-        label: "مالك",
-        color: "bg-purple-500/20 text-purple-300 border-purple-500/30",
-      },
-      admin: {
-        label: "أدمن",
-        color: "bg-gold-500/20 text-gold-300 border-gold-500/30",
-      },
-      supervisor: {
-        label: "مشرف",
-        color: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-      },
-      user: {
-        label: "مستخدم",
-        color: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
-      },
-    };
-    const c = config[role] || config.user;
-    return (
-      <span
-        className={`text-[9px] px-1.5 py-0.5 rounded-full border font-medium ${c.color}`}
-      >
-        {c.label}
-      </span>
-    );
-  }
+  const config = {
+    superadmin: {
+      label: "مالك",
+      color: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+    },
+    admin: {
+      label: "أدمن",
+      color: "bg-gold-500/20 text-gold-300 border-gold-500/30",
+    },
+    supervisor: {
+      label: "مشرف",
+      color: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+    },
+    user: {
+      label: "مستخدم",
+      color: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+    },
+  };
+  const c = config[role] || config.user;
+  return (
+    <span
+      className={`text-[9px] px-1.5 py-0.5 rounded-full border font-medium ${c.color}`}
+    >
+      {c.label}
+    </span>
+  );
+}
 
 export default function AdminLayout() {
   const restaurantName = useStore(

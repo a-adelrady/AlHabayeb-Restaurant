@@ -11,6 +11,7 @@ import {
   MdWhatsapp,
   MdShoppingCart,
   MdDeliveryDining,
+  MdLocalOffer,
 } from "react-icons/md";
 import toast from "react-hot-toast";
 import useStore from "../store/useStore";
@@ -48,9 +49,27 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const validateCoupon = useStore((s) => s.validateCoupon);
+  const useCoupon = useStore((s) => s.useCoupon);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [couponResult, setCouponResult] = useState(null); // { valid, discount, coupon, error }
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    const result = validateCoupon(couponCode.trim(), subtotal);
+    setCouponResult(result);
+    setCouponLoading(false);
+  };
+  
   const subtotal = getCartSubtotal();
   const deliveryFee = getDeliveryFee();
   const total = getCartTotal();
+  
+  const couponDiscount = couponResult?.valid ? couponResult.discount : 0;
+  const finalTotal = total - couponDiscount;
 
   // FIX: validate() now also checks minOrderAmount from settings
   const validate = () => {
@@ -95,6 +114,7 @@ export default function CheckoutPage() {
       const order = await createOrder(customerData);
       const waUrl = buildWhatsAppMessage(order, settings);
       clearCart();
+      if (couponResult?.valid) useCoupon(couponCode.trim());
       toast.success("تم تأكيد طلبك! 🎉");
       navigate("/order-success", { state: { orderId: order.id, waUrl } });
     } catch (err) {
@@ -316,6 +336,62 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                 </div>
+
+                {/* كوبون الخصم */}
+                <div className="dark:bg-zinc-900 bg-white rounded-2xl p-6 border dark:border-zinc-800 border-gray-100">
+                  <h2 className="font-bold text-lg dark:text-white text-gray-900 mb-4 flex items-center gap-2">
+                    <MdLocalOffer className="text-gold-500 text-xl" /> كوبون
+                    الخصم
+                  </h2>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="أدخل كود الخصم"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value.toUpperCase());
+                        setCouponResult(null);
+                      }}
+                      disabled={couponResult?.valid}
+                      className="flex-1 px-4 py-3 rounded-xl dark:bg-zinc-800 bg-gray-50 border-2 dark:border-zinc-700 border-gray-200 dark:text-white text-gray-900 placeholder-zinc-500 outline-none focus:border-gold-500 text-sm uppercase tracking-wider disabled:opacity-60"
+                    />
+                    <button
+                      type="button"
+                      onClick={
+                        couponResult?.valid
+                          ? () => {
+                              setCouponResult(null);
+                              setCouponCode("");
+                            }
+                          : handleApplyCoupon
+                      }
+                      disabled={couponLoading}
+                      className={`px-5 py-3 rounded-xl font-bold text-sm transition-all ${
+                        couponResult?.valid
+                          ? "bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20"
+                          : "bg-gold-500 hover:bg-gold-600 text-black"
+                      }`}
+                    >
+                      {couponResult?.valid ? "إلغاء" : "تطبيق"}
+                    </button>
+                  </div>
+                  {couponResult && (
+                    <p
+                      className={`text-sm mt-2 flex items-center gap-1.5 ${couponResult.valid ? "text-green-400" : "text-red-400"}`}
+                    >
+                      {couponResult.valid ? (
+                        <>
+                          <span>✓</span> تم تطبيق الخصم — وفّرت{" "}
+                          {formatPrice(couponResult.discount)}
+                        </>
+                      ) : (
+                        <>
+                          <span>✕</span> {couponResult.error}
+                        </>
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* ── Summary column ── */}
@@ -368,12 +444,20 @@ export default function CheckoutPage() {
                           : "—"}
                       </span>
                     </div>
+                    {couponDiscount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-green-400">خصم الكوبون</span>
+                        <span className="text-green-400 font-bold">
+                          - {formatPrice(couponDiscount)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center border-t dark:border-zinc-800 border-gray-200 pt-2">
                       <span className="font-bold dark:text-white text-gray-900">
                         الإجمالي
                       </span>
                       <span className="font-bold text-gold-500 text-xl">
-                        {formatPrice(total)}
+                        {formatPrice(finalTotal)}
                       </span>
                     </div>
                   </div>
