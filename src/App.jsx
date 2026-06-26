@@ -3,6 +3,8 @@ import {
   fsSubscribeOrders,
   fsSubscribeArchivedOrders,
   fsSubscribeNotifications,
+  fsSubscribeOffers,
+  fsSubscribeCoupons,
 } from "./services/firestoreService";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db, DEMO_MODE } from "./services/firebase";
@@ -126,12 +128,22 @@ function AppContent() {
       useStore.setState({ notifications });
     });
 
+    const unsubOffers = fsSubscribeOffers((offers) => {
+      if (offers.length > 0) useStore.setState({ offers });
+    });
+
+    const unsubCoupons = fsSubscribeCoupons((coupons) => {
+      useStore.setState({ coupons });
+    });
+
     return () => {
       unsubProducts();
       unsubCategories();
       unsubOrders();
       unsubArchived();
       unsubNotifications();
+      unsubOffers();
+      unsubCoupons();
       clearTimeout(forceSync);
     };
   }, []);

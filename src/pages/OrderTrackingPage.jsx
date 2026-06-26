@@ -5,11 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { MdSearch, MdRadioButtonUnchecked, MdAccessTime } from "react-icons/md";
 import useStore from "../store/useStore";
 import { db, DEMO_MODE } from "../services/firebase";
-import {
-  doc,
-  getDoc,
-  onSnapshot,
-} from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { getStatusLabel, formatDate, formatPrice } from "../utils/helpers";
 
 const STEPS = [
@@ -254,9 +250,12 @@ export default function OrderTrackingPage() {
                       aria-hidden="true"
                     />
                     <div
-                      className="absolute right-5 top-5 w-0.5 bg-gold-500 transition-all duration-1000"
+                      className="absolute right-5 top-0 w-0.5 bg-gold-500 transition-all duration-1000"
                       style={{
-                        height: `${currentStep <= 0 ? 0 : (currentStep / (STEPS.length - 1)) * 100}%`,
+                        height:
+                          currentStep === STEPS.length - 1
+                            ? "calc(100% - 40px)"
+                            : `${currentStep <= 0 ? 0 : (currentStep / (STEPS.length - 1)) * 100}%`,
                       }}
                       aria-hidden="true"
                     />
@@ -299,7 +298,9 @@ export default function OrderTrackingPage() {
                             </p>
                             {active && (
                               <p className="text-xs text-gold-500 mt-0.5 animate-pulse">
-                                جاري الآن...
+                                {STEPS[currentStep].status === "delivered"
+                                  ? `تم في ${formatDate(order.updatedAt)}`
+                                  : "جاري الآن..."}
                               </p>
                             )}
                           </div>

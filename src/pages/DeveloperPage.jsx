@@ -13,10 +13,10 @@ const DEV = {
   title:      'Frontend Developer & UI/UX Designer',
   titleAr:    'مطور فرونت اند ومصمم واجهات',
   bio:        'بحول أفكارك لمنتجات حقيقية — من التصميم للكود الشغال',
-  phone:      '201094799308',
-  email:      'ahmed@example.com',
-  github:     'https://github.com/yourusername',
-  linkedin:   'https://linkedin.com/in/yourusername',
+  phone:      '201100487170',
+  email:      'ahmedadel.elareed@gmail.com',
+  github:     'https://github.com/a-adelrady',
+  linkedin:   'https://www.linkedin.com/in/ahmed-adel-775515253',
   avatar:     '/developer.jpg', // ارفع صورتك في public/developer.jpg
 }
 

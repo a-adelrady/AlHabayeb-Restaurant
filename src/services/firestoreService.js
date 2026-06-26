@@ -326,3 +326,47 @@ export async function fsDeleteDeliveryZone(id) {
   if (DEMO_MODE) return;
   await deleteDoc(doc(db, COL.deliveryZones, id));
 }
+
+// ── Offers ────────────────────────────────────────────────────────────────
+const COL_OFFERS = "offers";
+
+export function fsSubscribeOffers(callback) {
+  if (DEMO_MODE) return () => {};
+  return onSnapshot(
+    collection(db, COL_OFFERS),
+    (snap) => callback(snap.docs.map((d) => ({ ...d.data(), id: d.id }))),
+    () => {},
+  );
+}
+
+export async function fsSaveOffer(offer) {
+  if (DEMO_MODE) return;
+  await setDoc(doc(db, COL_OFFERS, offer.id), offer);
+}
+
+export async function fsDeleteOffer(id) {
+  if (DEMO_MODE) return;
+  await deleteDoc(doc(db, COL_OFFERS, id));
+}
+
+// ── Coupons ───────────────────────────────────────────────────────────────
+const COL_COUPONS = "coupons";
+
+export function fsSubscribeCoupons(callback) {
+  if (DEMO_MODE) return () => {};
+  return onSnapshot(
+    collection(db, COL_COUPONS),
+    (snap) => callback(snap.docs.map((d) => ({ ...d.data(), id: d.id }))),
+    () => {},
+  );
+}
+
+export async function fsSaveCoupon(coupon) {
+  if (DEMO_MODE) return;
+  await setDoc(doc(db, COL_COUPONS, coupon.id), coupon);
+}
+
+export async function fsDeleteCoupon(id) {
+  if (DEMO_MODE) return;
+  await deleteDoc(doc(db, COL_COUPONS, id));
+}

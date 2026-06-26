@@ -12,6 +12,10 @@ import {
   fsUpdateCategory,
   fsDeleteCategory,
   fsUpdateSettings,
+  fsSaveOffer,
+  fsDeleteOffer,
+  fsSaveCoupon,
+  fsDeleteCoupon,
   fsMarkNotificationRead,
   fsMarkAllNotificationsRead,
 } from "../services/firestoreService";
@@ -303,22 +307,27 @@ const useStore = create(
           expiresAt: null,
         },
       ],
-      addOffer: (offer) => {
+      addOffer: async (offer) => {
         const newOffer = { ...offer, id: `offer_${Date.now()}` };
         set({ offers: [...get().offers, newOffer] });
+        await fsSaveOffer(newOffer).catch(console.error);
       },
-      updateOffer: (id, updates) =>
-        set({
-          offers: get().offers.map((o) =>
-            o.id === id ? { ...o, ...updates } : o,
-          ),
-        }),
-      deleteOffer: (id) =>
-        set({ offers: get().offers.filter((o) => o.id !== id) }),
+      updateOffer: async (id, updates) => {
+        const updated = get().offers.map((o) =>
+          o.id === id ? { ...o, ...updates } : o,
+        );
+        set({ offers: updated });
+        const updatedOffer = updated.find((o) => o.id === id);
+        if (updatedOffer) await fsSaveOffer(updatedOffer).catch(console.error);
+      },
+      deleteOffer: async (id) => {
+        set({ offers: get().offers.filter((o) => o.id !== id) });
+        await fsDeleteOffer(id).catch(console.error);
+      },
 
       // ── Coupons ───────────────────────────────────────────────────────
       coupons: [],
-      addCoupon: (coupon) => {
+      addCoupon: async (coupon) => {
         const newCoupon = {
           ...coupon,
           id: `coup_${Date.now()}`,
@@ -326,16 +335,22 @@ const useStore = create(
           createdAt: new Date().toISOString(),
         };
         set({ coupons: [...get().coupons, newCoupon] });
+        await fsSaveCoupon(newCoupon).catch(console.error);
         return newCoupon;
       },
-      updateCoupon: (id, updates) =>
-        set({
-          coupons: get().coupons.map((c) =>
-            c.id === id ? { ...c, ...updates } : c,
-          ),
-        }),
-      deleteCoupon: (id) =>
-        set({ coupons: get().coupons.filter((c) => c.id !== id) }),
+      updateCoupon: async (id, updates) => {
+        const updated = get().coupons.map((c) =>
+          c.id === id ? { ...c, ...updates } : c,
+        );
+        set({ coupons: updated });
+        const updatedCoupon = updated.find((c) => c.id === id);
+        if (updatedCoupon)
+          await fsSaveCoupon(updatedCoupon).catch(console.error);
+      },
+      deleteCoupon: async (id) => {
+        set({ coupons: get().coupons.filter((c) => c.id !== id) });
+        await fsDeleteCoupon(id).catch(console.error);
+      },
       validateCoupon: (code, subtotal) => {
         const coupon = get().coupons.find(
           (c) => c.code.toUpperCase() === code.toUpperCase() && c.active,
@@ -378,7 +393,7 @@ const useStore = create(
         logo: null,
         openTime: "10:00",
         closeTime: "01:00",
-        minOrderAmount: 50,
+        minOrderAmount: 20,
       },
       updateSettings: async (updates) => {
         const merged = { ...get().settings, ...updates };
@@ -403,8 +418,8 @@ const useStore = create(
         categories: state.categories,
         deliveryZones: state.deliveryZones,
         settings: state.settings,
-        offers:   state.offers,
-        coupons:  state.coupons,
+        offers: state.offers,
+        coupons: state.coupons,
       }),
     },
   ),
