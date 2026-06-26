@@ -309,6 +309,15 @@ export async function fsMarkAllNotificationsRead() {
 }
 
 // ─── Delivery Zones ──────────────────────────────────────────────────────────
+export function fsSubscribeDeliveryZones(callback) {
+  if (DEMO_MODE) return () => {}
+  return onSnapshot(
+    collection(db, COL.deliveryZones),
+    (snap) => callback(snap.docs.map(d => ({ ...d.data(), id: d.id }))),
+    () => {}
+  )
+}
+
 export async function fsGetDeliveryZones() {
   if (DEMO_MODE) return [];
   const snap = await getDocs(collection(db, COL.deliveryZones));

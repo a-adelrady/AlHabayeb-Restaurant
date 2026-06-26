@@ -5,6 +5,7 @@ import {
   fsSubscribeNotifications,
   fsSubscribeOffers,
   fsSubscribeCoupons,
+  fsSubscribeDeliveryZones,
 } from "./services/firestoreService";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db, DEMO_MODE } from "./services/firebase";
@@ -129,11 +130,15 @@ function AppContent() {
     });
 
     const unsubOffers = fsSubscribeOffers((offers) => {
-      if (offers.length > 0) useStore.setState({ offers });
+      useStore.setState({ offers });
     });
 
     const unsubCoupons = fsSubscribeCoupons((coupons) => {
       useStore.setState({ coupons });
+    });
+
+    const unsubDeliveryZones = fsSubscribeDeliveryZones((deliveryZones) => {
+      if (deliveryZones.length > 0) useStore.setState({ deliveryZones });
     });
 
     return () => {
@@ -144,6 +149,7 @@ function AppContent() {
       unsubNotifications();
       unsubOffers();
       unsubCoupons();
+      unsubDeliveryZones();
       clearTimeout(forceSync);
     };
   }, []);
